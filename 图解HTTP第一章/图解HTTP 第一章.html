@@ -1,0 +1,725 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>图解HTTP</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	text-indent: -1.7em;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-opaquegray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="1a232834-99d7-41c7-b2ef-8231a47ff47d" class="page sans"><header><h1 class="page-title">图解HTTP</h1></header><div class="page-body"><p id="7568c099-a459-4749-846c-702c3756694c" class="">
+</p><p id="102f1b98-3508-4f48-9bfa-a1895c929c29" class="">阅读源：<a href="https://awesome-programming-books.github.io/http/%E5%9B%BE%E8%A7%A3HTTP.pdf">https://awesome-programming-books.github.io/http/图解HTTP.pdf</a></p><p id="55dd5ecf-c4e9-4fb6-9f13-afdfdd73b762" class="">
+</p><p id="f0b581e9-68b2-4698-96de-f803b7f28f9f" class="">
+</p><h2 id="d09710f9-9003-4aa1-98c8-5057110a9138" class="">笔记</h2><p id="6299aa8c-2d66-4d9d-ae32-2f6ecceabeff" class="">
+</p><h2 id="259e8744-63c1-4185-b58e-cb3f8f30118b" class="">第一章 web及网络基础</h2><p id="dadbaf2f-0163-4dc5-8062-c58cae0c3fb2" class="">
+</p><p id="f51d486a-f539-4ba0-842a-05a020b74106" class="">各种协议与HTTP协议的关系</p><figure id="c5a01a15-c466-4a3f-91e1-aecef0dc9835" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-16_15.30.11.png"><img style="width:656px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-16_15.30.11.png"/></a></figure><p id="1e5c552a-d83f-4ebd-a686-a3bbf60b7d71" class="">
+</p><h3 id="c6bfb4df-7de8-4bec-9a53-f70f2dc59208" class="">TCP/IP</h3><p id="e0153976-154f-46c7-a8da-c3fc9b07f19c" class="">通常使用的网络（包括互联网）是在 TCP/IP 协议族的基础上运作的。而 HTTP 属于它内部的一个子集。</p><figure id="2c5c30ad-ccf7-4996-b3b0-0ab637245958" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.27.36.png"><img style="width:1528px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.27.36.png"/></a></figure><p id="cd3a892d-23fd-45f1-ba78-89f18b328cfb" class="">
+</p><p id="6c19b3c6-41bd-4738-a51f-ae7c003a3ef4" class="">协议内容：<div class="indented"><p id="c0fd3d37-0351-4544-8291-e0fde6cd0bec" class="">电缆的规格</p><p id="b749075d-cb11-43e2-bea8-8757c5cada39" class="">IP 地址的选定方法
+寻找异地用户的方法</p><p id="677f66e6-9344-498e-b0ed-ccaaa1b102a3" class="">双方建立通信的顺序</p><p id="1c8b1dd1-ce6a-4e3e-8f01-fdea31d8d56b" class="">Web 页面显示需要处理的步骤</p><p id="cbaa25da-7cf7-432c-82ee-d3c3d4ba0507" class="">……</p></div></p><p id="03fcb730-08d1-410f-a5e9-1d034666539c" class="">
+</p><p id="ecd951bb-89d1-4824-97e5-2dd67251829d" class="">TCP/IP 的分层管理：<div class="indented"><p id="2cb0ac5d-3259-4c07-9d1d-e4c3bcd858d3" class="">
+</p><p id="770b3387-6585-44bd-b7b4-a780077c65cd" class="">
+</p><table id="56e9e615-df5f-4fda-b772-bc82f3f9ff2f" class="simple-table"><tbody><tr id="1c80a97e-e667-417f-b8e0-2ecbfab1346d"><td id="LZgW" class="">应用层</td><td id="=YNV" class="">层决定了向用户提供应用服务时通信的活动。</td><td id="sKFB" class=""><strong>FTP</strong>（File
+Transfer Protocol，文件传输协议）和 <strong>DNS</strong>（Domain Name System，域
+名系统）服务
+<strong>HTTP</strong></td><td id="IoV;" class=""></td></tr><tr id="c0b93071-3bc4-4eea-948b-a69f825f6660"><td id="LZgW" class="">传输层
+</td><td id="=YNV" class="">提供处于网络连接中的两台计算机之间的数据
+传输。</td><td id="sKFB" class=""><strong>TCP</strong>（Transmission Control
+Protocol，传输控制协议）和 <strong>UDP</strong>（User Data Protocol，用户数据报
+协议）。</td><td id="IoV;" class=""></td></tr><tr id="2a42b51d-4fdd-45dd-ac9e-e63357a61c43"><td id="LZgW" class="">网络层
+</td><td id="=YNV" class="">用来处理在网络上流动的数据包。数据包是网络传输的最小数
+据单位。该层规定了通过怎样的路径（所谓的传输路线）到达对方计算机，并把数据包传送给对方。</td><td id="sKFB" class=""></td><td id="IoV;" class=""></td></tr><tr id="97574fde-7dd5-44a7-8ec0-85833e7fcb6c"><td id="LZgW" class="">数据链路层</td><td id="=YNV" class="">用来处理连接网络的硬件部分。包括控制操作系统、硬件的设备驱动、NIC（Network Interface Card，网络适配器，即网卡），及光纤等物理可见部分（还包括连接器等一切传输媒介）。硬件上的范畴均在
+链路层的作用范围之内。</td><td id="sKFB" class=""></td><td id="IoV;" class=""></td></tr></tbody></table><p id="7e2bd03e-138f-43f0-82c8-7e60f8f520c2" class="">
+</p><p id="2b870139-8b94-4230-b755-d67a1db7a134" class="">分层的好处：</p><p id="ea33c17b-5230-4f86-a873-b01138ae004a" class="">规划好各层之间的接口，每个层次内部的设计就能够自由改动了。</p><p id="9c2be788-e08d-4fa6-a356-9f51cd369d14" class="">
+</p><p id="cd06d907-cad9-460b-b7d9-f8cbea2d1d2a" class="">利用 TCP/IP 协议族进行网络通信时，会通过分层顺序与对方进行通信。发送端从应用层往下走，接收端则往应用层往上走。</p><p id="0da8c964-5468-4ed3-bbaa-2f0caebd558d" class="">
+</p><figure id="ef464e22-69b4-4099-95fe-ff5e423f6c06" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.40.45.png"><img style="width:1312px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.40.45.png"/></a></figure><p id="db3ec92b-4ddf-4769-9e3d-171f294bfe9f" class="">这种把数据信息包装起来的做法称为封装（encapsulate）。</p><p id="c172f731-41ae-4bcb-8a5b-d1d68f5efdf6" class="">
+</p></div></p><h3 id="68f1136f-3590-4a6b-a734-2e02626678d4" class="">IP协议</h3><p id="5c72b35b-8354-4fd6-8e95-2425fd162e23" class="">IP（Internet Protocol）网际协议位于网络层</p><p id="ce9a8d94-a0a6-40de-9959-51fc417bf1ed" class="">作用：</p><p id="32d3d5e1-bfc3-40ae-af75-4cf3087c71e1" class="">把各种数据包传送给对方，其中两个重要的条件是 IP 地址和 MAC地址（Media Access Control Address）。</p><p id="28b27b95-1619-4fdc-ab8f-1de988aec93f" class="">
+</p><table id="783a3166-4fea-4b71-9f58-6301d0948f33" class="simple-table"><tbody><tr id="05564da1-e32f-448a-ae51-cd3db3c55c45"><td id="}Zua" class="">IP地址</td><td id="&lt;WN&gt;" class="">节点被分配到的地址</td><td id="\SW[" class="">可变换</td></tr><tr id="0bb4f65c-519b-43dd-b83c-dd130f7078e2"><td id="}Zua" class="">MAC地址</td><td id="&lt;WN&gt;" class="">指网卡所属的固定地址</td><td id="\SW[" class="">不可变换</td></tr></tbody></table><ul id="36888dec-11d2-41fc-aa8e-24cf00762d56" class="bulleted-list"><li style="list-style-type:disc">IP 地址可以和MAC 地址进行配对。</li></ul><ul id="2dc489c3-df71-4023-a012-7cd3784ae4e1" class="bulleted-list"><li style="list-style-type:disc">IP 间的通信依赖 MAC 地址。</li></ul><p id="58bb6999-8d29-4fbb-a3a6-5054138f4b41" class="">
+</p><h3 id="1d3df43f-6f31-45f3-a793-6225cec22fa8" class="">ARP 协议（Address Resolution Protocol）</h3><p id="cea782c2-f88e-456c-bd06-d2353e5052fb" class="">ARP 是一种用以解析地址的协议</p><p id="9f32d99b-ad0b-4198-9886-738d1d42aacb" class="">
+</p><p id="f83ce4f6-5752-43db-b176-765d7471ff86" class="">通信双方经过多台计算机和网络设备中转时，会利用下一站中转设备的 MAC地址来搜索下一个中转目标。这时，会采用 ARP 协议，根据通信方的 IP 地址就可以反查出对应的 MAC 地址。</p><figure id="98bf84a6-3435-4560-9da1-ead92fd34fad" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.56.20.png"><img style="width:890px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_17.56.20.png"/></a></figure><p id="a5384dba-7204-41e6-b877-3c288e40b7b5" class="">
+</p><p id="58f57910-deee-4b0b-92d6-738c0b41a6e6" class="">
+</p><h3 id="59f81fe4-b5cd-4c7d-bf6d-d7eb284829b1" class="">路由选择</h3><p id="ef1535f2-6f4f-47dc-9349-5bc8634ba5f8" class="">
+</p><p id="87a624fe-3050-44ae-bbc6-ffcd74285b63" class="">在到达通信目标前的中转过程中，那些计算机和路由器等网络设备只能获悉很粗略的传输路线。这种机制称为路由选择（routing）</p><p id="aaad399d-c3ac-4a5f-8322-8e312740e920" class="">
+</p><p id="35b479b1-24d1-4a2a-90cc-946a070c9bec" class="">
+</p><h2 id="5da2a229-9a31-4628-b902-d8f9fb20f186" class="">TCP 协议</h2><p id="637206bd-e870-4b61-9500-224e28565936" class="">
+</p><p id="8e8134d7-b77a-484d-9666-7315e9a9dc09" class="">TCP 位于传输层，采用了三次握手（three-way handshaking）等策略，提供可靠的字节流服务。</p><p id="221b1f3f-1d22-4d19-9803-9fafaddc63f1" class="">
+</p><p id="af7af9a2-de1e-4934-add7-e8dc2c9c3711" class="">字节流服务（Byte Stream Service）是指，为了方便传输，将大块数据分割成以报文段（segment）为单位的数据包进行管理。</p><p id="63f4d133-4ed1-41dd-92cb-27091e99aecc" class="">
+</p><p id="f0e11292-2167-459c-b4b0-aa9038c8c61b" class="">三次握手握手过程中使用了 TCP 的标志（flag） —— <strong>SYN</strong>（synchronize） 和<strong>ACK</strong>（acknowledgement）。</p><p id="ebdf6114-15ce-4051-8de5-627dfea0d4b1" class="">
+</p><figure id="0f37e9ce-2699-4337-804e-853eacde3936" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_18.04.33.png"><img style="width:1412px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-15_18.04.33.png"/></a></figure><p id="7dc69315-fcd3-4fe6-8c83-8c68dcbea4ff" class="">
+</p><p id="95a0bef5-5dbc-43ee-be46-678e6390c576" class="">
+</p><h2 id="fe7eec52-26c1-46b2-adf3-fe5f6321b68a" class="">DNS 服务</h2><p id="5d2d5bce-9b1e-4c4c-b67f-9c769f6bfbf1" class="">DNS（Domain Name System）服务是位于应用层的
+协议。它提供域名到 IP 地址之间的解析服务。</p><p id="2a5e47c2-ad2a-4ccc-a2bd-3be78bc51f8a" class="">
+</p><p id="35745bf1-965d-4008-85fc-64efef385736" class="">计算机被赋予 IP地址、主机名、域名</p><p id="65f42cd4-91e4-4772-9722-f6a5c7f8099a" class="">用户通常使用主机名或域名来访问对方的计算机，而不是直接通过 IP地址访问。</p><p id="644cb333-422e-4efd-aa9c-530adbd33c50" class="">
+</p><p id="6a52becd-4cf7-4250-b041-6f1a8fb5c0b3" class="">
+</p><h3 id="479bc961-145a-4805-8d0f-4141fc4b3af6" class="">URI（Uniform Resource Identifier，统一资源标识符）</h3><h3 id="fe56bc1f-bdeb-4b34-8e56-475524be9aa4" class="">URL（Uniform Resource Locator，统一资源定位符）</h3><p id="88b28b9e-b4c0-4edf-9d34-067310626ab7" class="">
+</p><p id="e9ef9077-b01d-4b64-a6a8-cc5d369d7d3b" class="">URI 用字符串标识某一互联网资源，而 URL表示资源的地点</p><p id="4254fb7b-d9fd-4339-8282-0d95cebaa14f" class="">
+</p><p id="a76beb60-c166-4f15-97f8-e68398ba3aa9" class="">标准的 URI 协议方案有 30 种左右，由隶属于国际互联网资源管理的非营利社团 ICANN（Internet Corporation for Assigned Names and Numbers，互联网名称与数字地址分配机构）的IANA（Internet Assigned Numbers Authority，互联网号码分配局）管理颁布。</p><p id="c8a395c6-7797-4b86-8fbf-6d5e975adee5" class="">
+</p><figure id="97003c79-1c51-4f79-8503-a6e8d8519abc" class="image"><a href="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-16_15.19.14.png"><img style="width:1028px" src="%E5%9B%BE%E8%A7%A3HTTP%201a23283499d741c7b2ef8231a47ff47d/%25E6%2588%25AA%25E5%25B1%258F2022-11-16_15.19.14.png"/></a></figure><table id="57b619c3-c966-491b-a51d-67b780ebc563" class="simple-table"><tbody><tr id="2bfa5c97-b782-4a0e-aa05-2567ee30cfb5"><td id="a\_~" class="">协议方案名</td><td id="nawH" class="">不区分大小写，最后附一个冒号：</td><td id="]ww]" class=""></td></tr><tr id="c024e701-9108-4210-8ce1-e36654e8f044"><td id="a\_~" class="">登录信息</td><td id="nawH" class="">可选项</td><td id="]ww]" class=""></td></tr><tr id="0c72ecdf-561e-4d41-b6d8-93491874ed76"><td id="a\_~" class="">服务器地址</td><td id="nawH" class="">使用绝对 URI 必须指定待访问的服务器地址</td><td id="]ww]" class="">地址可以是类似
+<a href="http://hackr.jp/">hackr.jp</a> 这种 <span style="border-bottom:0.05em solid">DNS 可解析的名称</span>
+或是 192.168.1.1 这类 <span style="border-bottom:0.05em solid">IPv4 地址名</span>
+还可以是 [0:0:0:0:0:0:0:1] 这样用方括号括起来的 <span style="border-bottom:0.05em solid">IPv6 地址名</span>。</td></tr><tr id="da52b8b4-63fa-485e-a4d5-296f98f9d523"><td id="a\_~" class="">服务器端口号</td><td id="nawH" class="">指定服务器连接的网络端口号。此项也是可选项，若用户省略则自动使用默认端口号。</td><td id="]ww]" class=""></td></tr><tr id="90ef175e-a4e3-4573-81b9-893f4ce2cc0a"><td id="a\_~" class="">带层次的文件路径</td><td id="nawH" class="">指定服务器上的文件路径来定位特指的资源。这与 UNIX 系统的文件目录结构相似。</td><td id="]ww]" class=""></td></tr><tr id="f5efb48e-53b7-4a3b-b61f-5e3256c24b62"><td id="a\_~" class="">查询字符串</td><td id="nawH" class="">针对已指定的文件路径内的资源，可以使用查询字符串传入任意参
+数</td><td id="]ww]" class="">可选项</td></tr><tr id="2dccc81a-049f-46c7-aed5-4ba60bf98fc6"><td id="a\_~" class="">片段标识符</td><td id="nawH" class="">可标记出已获取资源中的子资源（文档内的某个
+位置）。但在 RFC 中并没有明确规定其使用方法。</td><td id="]ww]" class="">可选项</td></tr></tbody></table><p id="fa016446-54ec-4a1b-897c-0dcf44001811" class="">
+</p><h3 id="49ffa140-aaff-466d-9a59-9fc383559d24" class="">RFC （Request for Comments，征求修正意见书）</h3><p id="b27e3a8c-b871-43c7-9ca2-26f5333c4e15" class="">一些用来制定 HTTP 协议技术标准的文档</p><p id="2f2e82db-cf0e-4de6-9032-ebe55decd9e4" class="">可以说，RFC 是互联网的设计文档，要是不按照 RFC 标准执行，就有可能导致无法通信的状况。</p><p id="451d6ac9-09a0-47df-8225-c8932715f903" class="">
+</p><p id="936c3530-5d62-45e1-9f72-42592ee77292" class="">
+</p><p id="ae80f97a-dace-4b25-a8e3-e40956823868" class="">
+</p><p id="0005506d-d625-474a-af05-f8640ec2ea45" class="">
+</p></div></article></body></html>
